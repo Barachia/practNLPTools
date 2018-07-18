@@ -1,3 +1,5 @@
+Made changes in tools.py to fix type errors.
+
 practNLPTools
 =============
 
