@@ -11,7 +11,6 @@
 """
 A module for interfacing with the SENNA and Stanford Dependency Extractor.
 SUPPORTED_OPERATIONS: It provides Part of Speech Tags, Semantic Role Labels, Shallow Parsing (Chunking), Named Entity Recognisation (NER), Dependency Parse and Syntactic Constituency Parse.
-
 Requirement: Java Runtime Environment :)
 """
 
@@ -24,22 +23,18 @@ class Annotator:
     r"""
     A general interface of the SENNA/Stanford Dependency Extractor pipeline that supports any of the
     operations specified in SUPPORTED_OPERATIONS.
-
+....
     SUPPORTED_OPERATIONS: It provides Part of Speech Tags, Semantic Role Labels, Shallow Parsing (Chunking), Named Entity ....   ....Recognisation (NER), Dependency Parse and Syntactic Constituency Parse.
-
     Applying multiple operations at once has the speed advantage. For example,
     senna v3.0 will calculate the POS tags in case you are extracting the named
     entities. Applying both of the operations will cost only the time of
     extracting the named entities. Same is true for dependency Parsing.
-
     SENNA pipeline has a fixed maximum size of the sentences that it can read.
     By default it is 1024 token/sentence. If you have larger sentences, changing
     the MAX_SENTENCE_SIZE value in SENNA_main.c should be considered and your
     system specific binary should be rebuilt. Otherwise this could introduce
     misalignment errors.
-
     Example:
-
 
     """
 
@@ -75,7 +70,7 @@ class Annotator:
 ''')[0:-1]
 
     def getSennaTag(self, sentence):
-        input_data = sentence
+        input_data = sentence.encode()
         package_directory = os.path.dirname(os.path.abspath(__file__))
         os_name = system()
         executable = ''
@@ -98,7 +93,7 @@ class Annotator:
                              stdin=subprocess.PIPE)
         senna_stdout = p.communicate(input=input_data)[0]
         os.chdir(cwd)
-        return senna_stdout
+        return senna_stdout.decode()
 
     def getDependency(self, parse):
         package_directory = os.path.dirname(os.path.abspath(__file__))
@@ -239,10 +234,8 @@ class Annotator:
 
     def getAnnotations(self, sentence, dep_parse=False):
         annotations = {}
-        senna_tags = self.getSennaTag(sentence.encode())
-        senna_tags = senna_tags.decode()
-        senna_tags = map(lambda x: x.strip(), senna_tags.split('\n'))
-        senna_tags = list(senna_tags)
+        senna_tags = self.getSennaTag(sentence)
+        senna_tags = list(map(lambda x: x.strip(), senna_tags.split('\n')))
         no_verbs = len(senna_tags[0].split('\t')) - 6
         words = []
         pos = []
@@ -338,21 +331,13 @@ class Annotator:
 
 def test():
     annotator = Annotator()
-    print
-    annotator.getBatchAnnotations(['He killed the man with a knife and murdered him with a dagger.'
-                                      , 'He is a good boy.'],
-                                  dep_parse=True)
-    print
-
-    annotator.getAnnotations('Republican candidate George Bush was great.'
-                             , dep_parse=True)['dep_parse']
-    print
-
-    annotator.getAnnotations('Republican candidate George Bush was great.'
-                             , dep_parse=True)['chunk']
+    print(annotator.getBatchAnnotations(['He killed the man with a knife and murdered him with a dagger.'
+                                      , 'He is a good boy.'], dep_parse=True))
+    print(annotator.getAnnotations('Republican candidate George Bush was great.'
+                             , dep_parse=True)['dep_parse'])
+    print(annotator.getAnnotations('Republican candidate George Bush was great.'
+                             , dep_parse=True)['chunk'])
 
 
 if __name__ == '__main__':
     test()
-
-
