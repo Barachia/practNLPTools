@@ -1,6 +1,6 @@
 from distutils.core import setup
 from distutils.command.install import INSTALL_SCHEMES
-files = ["practnlptools/*"]
+files = ["practnlptools//*"]
 import os
 def walkdir(dirname):
     rec_files=[]
